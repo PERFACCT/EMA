@@ -39,6 +39,7 @@
 /* TODO: Make this part of registration message, instead of hard-coding. */
 #define DEVICE_TYPE "misc"
 #define EMA_MQTT_CREDS "EMA_MQTT_CREDS"
+#define EMA_MQTT_TLS "EMA_MQTT_TLS"
 
 /* ****************************************************************************
 **** Typedefs
@@ -62,12 +63,19 @@ typedef struct
     char* password;
 } MqttCreds;
 
+typedef struct {
+    char* cafile;
+    char* certfile;
+    char* keyfile;
+} MqttTls;
+
 typedef struct
 {
     char* name;
     DeviceArray devices;
     MqttPluginConfig* config;
     MqttCreds* creds;
+    MqttTls* tls;
 } MqttPluginData;
 
 typedef struct
@@ -163,11 +171,24 @@ int read_byte_message(
     const char* topic,
     uint16_t port,
     MqttCreds* creds,
+    MqttTls* tls,
     int timeout
 )
 {
     if( !mqtt )
         return 0;
+
+    if ( tls ) {
+        mosquitto_tls_set(
+            mqtt,
+            tls->cafile,
+            NULL,
+            tls->certfile,
+            tls->keyfile,
+            NULL
+        );
+        mosquitto_tls_opts_set(mqtt,1,NULL,NULL); 
+    }
 
     if ( creds )
     {
@@ -235,6 +256,7 @@ uint8_t* read_devices(MqttPluginData* data)
         config->topic,
         config->port,
         data->creds,
+        data->tls,
         timeout_sec
     );
     if (err) mosquitto_destroy(mqtt);
@@ -264,6 +286,7 @@ uint64_t read_energy(MqttDeviceData* device, MqttPluginData* data)
         device->topic,
         device->config->port,
         data->creds,
+        data->tls,
         timeout_sec
     );
     if (err) mosquitto_destroy(mqtt);
@@ -294,6 +317,58 @@ MqttCreds* _parse_creds(char* cred_str)
     creds->password = strdup(password);
     
     return creds;
+}
+
+static
+MqttTls* _parse_tls(const char* tls)
+{
+    const char* delimiter = ":";
+    if (!tls || !*tls) return NULL;
+
+    MqttTls *t = calloc(1, sizeof(MqttTls));
+    if (!t) return NULL;
+
+    char *tmp = strdup(tls);
+    if (!tmp)
+    {
+        free(t);
+        return NULL;
+    }
+
+    char *token = strtok(tmp, delimiter);
+    if (token) t->cafile = strdup(token);
+    token = strtok(NULL, delimiter);
+    if (token) t->certfile = strdup(token);
+    token = strtok(NULL, delimiter);
+    if (token) t->keyfile  = strdup(token);
+
+    free(tmp);
+    if (!t->cafile) {
+        free(t);
+        return NULL;
+    }
+
+    return t;
+}
+
+static
+MqttTls* init_tls()
+{
+    char* tls = getenv(EMA_MQTT_TLS);
+    if( tls ) return _parse_tls(tls);
+    return NULL;
+}
+
+static
+void free_tls(MqttTls* tls)
+{
+    if( tls )
+    {
+        free(tls->cafile);
+        free(tls->certfile);
+        free(tls->keyfile);
+        free(tls);
+    }
 }
 
 static
@@ -337,6 +412,7 @@ int mqtt_plugin_init(Plugin* plugin)
     MqttPluginConfig* config = p_data->config;
 
     p_data->creds = init_creds();
+    p_data->tls = init_tls();
 
     /* Initialize mosquitto. */
     mosquitto_lib_init();
@@ -431,6 +507,7 @@ int mqtt_plugin_finalize(Plugin* plugin)
     }
 
     free_creds(p_data->creds);
+    free_tls(p_data->tls);
     free(p_data->devices.array);
     free(p_data->config->host);
     free(p_data->config->topic);
