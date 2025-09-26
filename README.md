@@ -219,7 +219,6 @@ environment variable `EMA_MQTT_TLS` containing the following:
 - `<path_to_cafile>:<path_to_certfile>:<path_to_keyfile>` - in case of the end-to-end
    two way TLS configuration.
 
-`<username>:<password>`.
 #### Auth Configuration
 
 In case your MQTT Broker requires username/password authentication set/export
