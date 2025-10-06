@@ -359,6 +359,18 @@ MqttTls* _parse_tls(const char* tls)
 }
 
 static
+void free_tls(MqttTls* tls)
+{
+    if( tls )
+    {
+        free(tls->cafile);
+        free(tls->certfile);
+        free(tls->keyfile);
+        free(tls);
+    }
+}
+
+static
 MqttTls* init_tls()
 {
     char* tls = getenv(EMA_MQTT_TLS);
@@ -368,12 +380,14 @@ MqttTls* init_tls()
         if( _tls == NULL)
         {
             fprintf(stderr, "error: TLS options: failed to parse \n");
+            free_tls(_tls);
             return NULL;
         }
 
         if( _tls->cafile == NULL)
         {
             fprintf(stderr, "error: TLS options: missing cafile path \n");
+            free_tls(_tls);
             return NULL;
         }
 
@@ -387,23 +401,12 @@ MqttTls* init_tls()
                 "error: TLS options: both certfile and keyfile "
                 "paths have to be supplied\n"
             );
+            free_tls(_tls);
             return NULL;
         }
         return _tls;
     }
     return NULL;
-}
-
-static
-void free_tls(MqttTls* tls)
-{
-    if( tls )
-    {
-        free(tls->cafile);
-        free(tls->certfile);
-        free(tls->keyfile);
-        free(tls);
-    }
 }
 
 static
