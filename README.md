@@ -214,7 +214,7 @@ In case your MQTT Broker is running over the MQTTS (with TLS/SSL configured) set
 environment variable `EMA_MQTT_TLS` containing the following:
 
 - `<path_to_your_cafile>` - in case of a simple TLS when broker does not require a
-   certificate form the client.
+   certificate from the client.
 
 - `<path_to_cafile>:<path_to_certfile>:<path_to_keyfile>` - in case of the end-to-end
    two way TLS configuration.
