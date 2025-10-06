@@ -178,7 +178,8 @@ int read_byte_message(
     if( !mqtt )
         return 0;
 
-    if ( tls ) {
+    if ( tls )
+    {
         mosquitto_tls_set(
             mqtt,
             tls->cafile,
@@ -197,7 +198,8 @@ int read_byte_message(
             creds->username,
             creds->password
         );
-        if( ret != MOSQ_ERR_SUCCESS ) {
+        if( ret != MOSQ_ERR_SUCCESS )
+        {
             fprintf(
                 stderr,
                 "Failed to set username and password: %s\n",
@@ -323,27 +325,32 @@ static
 MqttTls* _parse_tls(const char* tls)
 {
     const char* delimiter = ":";
-    if (!tls || !*tls) return NULL;
+    if( !tls || !*tls )
+        return NULL;
 
     MqttTls *t = calloc(1, sizeof(MqttTls));
-    if (!t) return NULL;
+    if( !t ) return NULL;
 
     char *tmp = strdup(tls);
-    if (!tmp)
+    if( !tmp )
     {
         free(t);
         return NULL;
     }
 
     char *token = strtok(tmp, delimiter);
-    if (token) t->cafile = strdup(token);
+    if( token )
+        t->cafile = strdup(token);
     token = strtok(NULL, delimiter);
-    if (token) t->certfile = strdup(token);
+    if( token )
+        t->certfile = strdup(token);
     token = strtok(NULL, delimiter);
-    if (token) t->keyfile  = strdup(token);
+    if( token )
+        t->keyfile  = strdup(token);
 
     free(tmp);
-    if (!t->cafile) {
+    if( !t->cafile )
+    {
         free(t);
         return NULL;
     }
@@ -355,7 +362,8 @@ static
 MqttTls* init_tls()
 {
     char* tls = getenv(EMA_MQTT_TLS);
-    if( tls ) return _parse_tls(tls);
+    if( tls )
+        return _parse_tls(tls);
     return NULL;
 }
 
