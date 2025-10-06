@@ -188,7 +188,7 @@ int read_byte_message(
             tls->keyfile,
             NULL
         );
-        mosquitto_tls_opts_set(mqtt,1,NULL,NULL); 
+        mosquitto_tls_opts_set(mqtt, 1, NULL, NULL);
     }
 
     if ( creds )
