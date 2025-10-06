@@ -380,7 +380,6 @@ MqttTls* init_tls()
         if( _tls == NULL)
         {
             fprintf(stderr, "error: TLS options: failed to parse \n");
-            free_tls(_tls);
             return NULL;
         }
 
