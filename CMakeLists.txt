@@ -7,7 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(Threads REQUIRED)
 
 # NVML
-find_package(CUDAToolkit)
+find_package(NVML)
 
 # MQTT
 find_package(Mosquitto)
@@ -64,7 +64,7 @@ target_include_directories(EMA PRIVATE .)
 target_compile_definitions(EMA PRIVATE _GNU_SOURCE)
 target_link_libraries(EMA PRIVATE hashmap Threads::Threads)
 
-if( CUDAToolkit_FOUND )
+if(NVML_FOUND)
     # NVML plugin
     target_sources(
         EMA
@@ -72,7 +72,7 @@ if( CUDAToolkit_FOUND )
         PRIVATE EMA/plugins/plugin_nvml.h
     )
     target_compile_definitions(EMA PRIVATE EMA_HAVE_NVML)
-    target_link_libraries(EMA PRIVATE CUDA::nvml)
+    target_link_libraries(EMA PRIVATE NVML::NVML)
 endif()
 
 if( Mosquitto_FOUND )
