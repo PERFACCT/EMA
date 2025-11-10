@@ -13,9 +13,6 @@ find_path(NVML_INCLUDE_DIR
     PATHS
         /usr/include
         /usr/local/include
-        /usr/local/cuda/include
-        /usr/local/cuda*/include
-        /opt/cuda/include
         ENV CPATH
         ENV C_INCLUDE_PATH
         $ENV{CUDA_HOME}/include
@@ -30,9 +27,6 @@ find_library(NVML_LIBRARY
         /usr/lib64
         /usr/local/lib
         /usr/local/lib64
-        /usr/local/cuda/lib64
-        /usr/local/cuda*/lib64
-        /opt/cuda/lib64
         $ENV{CUDA_HOME}/lib64
         $ENV{CUDA_PATH}/lib64
         ENV LD_LIBRARY_PATH
@@ -43,23 +37,11 @@ if (NOT NVML_INCLUDE_DIR OR NOT NVML_LIBRARY)
     find_package(CUDAToolkit QUIET)
     if (CUDAToolkit_FOUND)
         message(STATUS "Falling back to CUDAToolkit for NVML detection")
-
-        if (NOT NVML_INCLUDE_DIR)
-            find_path(NVML_INCLUDE_DIR
-                NAMES nvml.h
-                PATHS ${CUDAToolkit_INCLUDE_DIRS}
-            )
-            if (NOT NVML_INCLUDE_DIR)
-                set(NVML_INCLUDE_DIR "${CUDAToolkit_INCLUDE_DIRS}")
-            endif()
-        endif()
-
-        if (NOT NVML_LIBRARY)
-            find_library(NVML_LIBRARY
-                NAMES nvidia-ml
-                PATHS ${CUDAToolkit_LIBRARY_DIR}
-            )
-        endif()
+        set(NVML_INCLUDE_DIR "${CUDAToolkit_INCLUDE_DIRS}")
+        find_library(NVML_LIBRARY
+            NAMES nvidia-ml
+            PATHS ${CUDAToolkit_LIBRARY_DIR}
+        )
     endif()
 endif()
 
