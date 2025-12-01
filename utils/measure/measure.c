@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -109,7 +110,23 @@ int main(int argc, char** argv)
 
     EMA_REGION_BEGIN(region);
 
-    system(cmd);
+    int ret = system(cmd);
+
+    if (ret == -1)
+    /* NOTE: system failures (fork, wait etc.) */
+    {
+        perror("system");
+        status = 127;
+    }
+    else if (WIFEXITED(ret))
+    {
+        status = WEXITSTATUS(ret);
+    }
+    else if (WIFSIGNALED(ret))
+    {
+        int sig = WTERMSIG(ret);
+        status = 128 + sig;
+    }
 
     EMA_REGION_END(region);
     
