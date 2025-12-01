@@ -11,8 +11,6 @@
 #define TS_BUF_SIZE 64
 #define OUT_FILENAME_SIZE 64
 
-#define printl(MSG) do { printf(MSG "\n"); } while(0)
-
 #define HANDLE_ERROR(ERR) do \
 { \
     if(ERR) \
@@ -72,7 +70,7 @@ int main(int argc, char** argv)
 
     if(argc < 2)
     {
-        printl("USAGE: ema_measure CMD [args...]");
+        printf("USAGE: ema_measure CMD [args...]\n");
         status =  EXIT_FAILURE;
         goto exit;
     }
@@ -100,7 +98,7 @@ int main(int argc, char** argv)
 
     printf("CMD: %s\n", cmd);
 
-    printl("Initiallizing EMA...");
+    printf("Initiallizing EMA...\n");
     int err = EMA_init(NULL);
     HANDLE_ERROR(err);
 
@@ -117,7 +115,7 @@ int main(int argc, char** argv)
     
     get_iso_time(ts_end, TS_BUF_SIZE);
 
-    printl("Finalizing EMA...");
+    printf("Finalizing EMA...\n");
     err = EMA_finalize();
     HANDLE_ERROR(err);
 
