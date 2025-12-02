@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -10,8 +11,6 @@
 
 #define TS_BUF_SIZE 64
 #define OUT_FILENAME_SIZE 64
-
-#define printl(MSG) do { printf(MSG "\n"); } while(0)
 
 #define HANDLE_ERROR(ERR) do \
 { \
@@ -48,7 +47,7 @@ void append_quoted(char *dest, const char *src)
 
     for(; *src; ++src)
     {
-        if (*src == '"')
+        if(*src == '"')
         {
             strcat(dest, "\\\"");
         }
@@ -72,7 +71,7 @@ int main(int argc, char** argv)
 
     if(argc < 2)
     {
-        printl("USAGE: ema_measure CMD [args...]");
+        printf("USAGE: ema_measure CMD [args...]\n");
         status =  EXIT_FAILURE;
         goto exit;
     }
@@ -100,7 +99,7 @@ int main(int argc, char** argv)
 
     printf("CMD: %s\n", cmd);
 
-    printl("Initiallizing EMA...");
+    printf("Initiallizing EMA...\n");
     int err = EMA_init(NULL);
     HANDLE_ERROR(err);
 
@@ -111,13 +110,29 @@ int main(int argc, char** argv)
 
     EMA_REGION_BEGIN(region);
 
-    system(cmd);
+    int ret = system(cmd);
+
+    if(ret == -1)
+    /* NOTE: system failures (fork, wait etc.) */
+    {
+        perror("system");
+        status = 127;
+    }
+    else if(WIFEXITED(ret))
+    {
+        status = WEXITSTATUS(ret);
+    }
+    else if(WIFSIGNALED(ret))
+    {
+        int sig = WTERMSIG(ret);
+        status = 128 + sig;
+    }
 
     EMA_REGION_END(region);
     
     get_iso_time(ts_end, TS_BUF_SIZE);
 
-    printl("Finalizing EMA...");
+    printf("Finalizing EMA...\n");
     err = EMA_finalize();
     HANDLE_ERROR(err);
 
