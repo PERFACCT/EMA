@@ -47,7 +47,7 @@ void append_quoted(char *dest, const char *src)
 
     for(; *src; ++src)
     {
-        if (*src == '"')
+        if(*src == '"')
         {
             strcat(dest, "\\\"");
         }
@@ -112,17 +112,17 @@ int main(int argc, char** argv)
 
     int ret = system(cmd);
 
-    if (ret == -1)
+    if(ret == -1)
     /* NOTE: system failures (fork, wait etc.) */
     {
         perror("system");
         status = 127;
     }
-    else if (WIFEXITED(ret))
+    else if(WIFEXITED(ret))
     {
         status = WEXITSTATUS(ret);
     }
-    else if (WIFSIGNALED(ret))
+    else if(WIFSIGNALED(ret))
     {
         int sig = WTERMSIG(ret);
         status = 128 + sig;
